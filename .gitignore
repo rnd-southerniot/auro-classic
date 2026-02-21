@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Build outputs
+firmware_sdk/build*/
+
+# Local toolchains / SDK clones
+third_party/
