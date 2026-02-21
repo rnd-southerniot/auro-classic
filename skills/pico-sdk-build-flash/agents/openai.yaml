@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pico SDK Build Flash"
+  short_description: "Build and flash Airborne PicoSDK firmware."
+  default_prompt: "Build, flash, and smoke-test Airborne Classic PicoSDK firmware using deterministic local paths."

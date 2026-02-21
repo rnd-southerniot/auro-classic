@@ -87,3 +87,14 @@ Error:
 ```json
 {"type":"ack","id":"uuid","ok":false,"error":{"code":"bad_cmd","message":"..."}}
 ```
+
+## Implementation Status (February 21, 2026)
+
+Protocol v1 is the contract; firmware tracks it in staged subsets.
+
+- MicroPython (`firmware_mpy/main.py`) currently implements:
+  - `ping`, `set_log`, `version`, `i2c_scan`, `arm`, `disarm`, `stop`, `set_pwm`
+- PicoSDK (`firmware_sdk/src/main.c`) currently implements:
+  - `ping`, `version`, `arm`, `disarm`, `stop`, `set_pwm`
+- Deferred in both tracks (planned later gates):
+  - `set_rpm`, `cal_imu`, `cal_encoders`

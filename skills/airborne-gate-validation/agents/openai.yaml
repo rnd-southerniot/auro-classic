@@ -1,0 +1,4 @@
+interface:
+  display_name: "Airborne Gate Validation"
+  short_description: "Gate validation for Airborne RP2040 firmware."
+  default_prompt: "Validate Airborne Classic gates with stop-on-fail checks and serial transcript evidence."

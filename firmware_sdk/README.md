@@ -1,33 +1,49 @@
 # firmware_sdk
 
-PicoSDK production-track firmware skeleton for Airborne Classic.
+PicoSDK production firmware for Airborne Classic.
 
 ## Scope
-This track starts only after MicroPython gates pass. The current skeleton provides:
-- a minimal Pico SDK build target,
-- a runtime entrypoint (`src/main.c`) with NDJSON command/telemetry loop,
-- a quadrature PIO implementation plan (`docs/pio_quadrature_plan.md`).
+Current implementation provides:
+- USB NDJSON command/telemetry loop in `src/main.c`
+- PIO-based quadrature sampling (`src/quadrature_sample.pio`)
+- encoder count telemetry fields (`enc_l`, `enc_r`)
 
 ## Prerequisites
-- Raspberry Pi Pico SDK installed.
-- `PICO_SDK_PATH` exported.
-- CMake 3.13+ and ARM GCC toolchain.
+- Pico SDK checkout
+- Arm GNU toolchain with `arm-none-eabi-*`
+- CMake + Ninja
+
+Tested local setup:
+- `PICO_SDK_PATH=$PWD/third_party/pico-sdk`
+- `PICO_TOOLCHAIN_PATH=$PWD/third_party/arm-gnu-toolchain-15.2.rel1-darwin-arm64-arm-none-eabi/bin`
+
+## Install Local Dependencies (one-time)
+```bash
+git clone --depth 1 https://github.com/raspberrypi/pico-sdk.git third_party/pico-sdk
+git -C third_party/pico-sdk submodule update --init --recursive
+curl -fL -o /tmp/arm-gnu-toolchain.tar.xz https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/arm-gnu-toolchain-15.2.rel1-darwin-arm64-arm-none-eabi.tar.xz
+tar -xf /tmp/arm-gnu-toolchain.tar.xz -C third_party
+```
 
 ## Build
 ```bash
-cmake -S firmware_sdk -B firmware_sdk/build
-cmake --build firmware_sdk/build -j
+cmake -S firmware_sdk -B firmware_sdk/build-pico-arm -G Ninja
+cmake --build firmware_sdk/build-pico-arm -j
 ```
 
-## Flash (UF2)
-1. Hold BOOTSEL and connect RP2040 board.
-2. Copy `firmware_sdk/build/airborne_classic_fw.uf2` to the mounted RP2040 drive.
+## Flash
+1. Reboot to BOOTSEL (`picotool reboot -u -f`) or hold BOOTSEL while plugging USB.
+2. Copy `firmware_sdk/build-pico-arm/airborne_classic_fw.uf2` to `RPI-RP2`.
+
+## Protocol Coverage
+Implemented command subset:
+- `ping`, `version`, `arm`, `disarm`, `set_pwm`, `stop`
+
+Telemetry:
+- `mode`, `armed`, `pwm_l`, `pwm_r`, `enc_l`, `enc_r`, `rpm_l`, `rpm_r`, `yaw`, `fault`
+- `rpm_*` currently placeholder (`0.0`).
 
 ## Notes
-- Pin mapping and hardware truth remain anchored in `HARDWARE_MAP.md`.
-- Protocol compatibility target is `protocol/ndjson_v1.md`.
-- PIO quadrature details and milestones are documented in `docs/pio_quadrature_plan.md`.
-- Current `src/main.c` supports: `ping`, `version`, `arm`, `disarm`, `set_pwm`, `stop`.
-- Encoder counts (`enc_l`, `enc_r`) are sourced from PIO-based encoder samplers on GP2-3 and GP4-5.
-- Encoder sign is normalized so a shared physical "forward" direction can be represented consistently (`ENC_L_SIGN`, `ENC_R_SIGN` in `src/main.c`).
-- RPM output is still a placeholder (`rpm_l/rpm_r=0.0`) until count-to-RPM conversion is added.
+- Pin mapping remains anchored in `HARDWARE_MAP.md`.
+- Protocol compatibility target remains `protocol/ndjson_v1.md`.
+- Encoder sign is normalized in telemetry using `ENC_L_SIGN` / `ENC_R_SIGN` in `src/main.c`.

@@ -48,7 +48,8 @@ PWM frequency target: ~20 kHz
 
 ### Decoder strategy
 - MicroPython bring-up: IRQ-based counting (low speed)
-- PicoSDK production: **PIO quadrature**
+- PicoSDK production: PIO-based sampling + CPU transition decode
+- Telemetry sign convention: forward normalized positive on both channels (`ENC_L_SIGN=1`, `ENC_R_SIGN=-1`)
 
 ### Calibration
 - counts-per-wheel-rev: measured by rotating wheel 1 turn (3 trials)
