@@ -10,7 +10,10 @@ pico_sdk_init()
 
 add_executable(airborne_classic_fw
     src/main.c
+    src/quadrature_sample.pio
 )
+
+pico_generate_pio_header(airborne_classic_fw ${CMAKE_CURRENT_LIST_DIR}/src/quadrature_sample.pio)
 
 target_link_libraries(airborne_classic_fw
     pico_stdlib

@@ -28,4 +28,5 @@ cmake --build firmware_sdk/build -j
 - Protocol compatibility target is `protocol/ndjson_v1.md`.
 - PIO quadrature details and milestones are documented in `docs/pio_quadrature_plan.md`.
 - Current `src/main.c` supports: `ping`, `version`, `arm`, `disarm`, `set_pwm`, `stop`.
-- Encoder/RPM fields are currently placeholders (`enc_l/enc_r=0`) until PIO decode is integrated.
+- Encoder counts (`enc_l`, `enc_r`) are sourced from PIO-based encoder samplers on GP2-3 and GP4-5.
+- RPM output is still a placeholder (`rpm_l/rpm_r=0.0`) until count-to-RPM conversion is added.
