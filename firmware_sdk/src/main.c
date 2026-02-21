@@ -12,6 +12,8 @@
 #define ENC_L_PIN_BASE 2u
 #define ENC_R_PIN_BASE 4u
 #define ENCODER_SAMPLE_HZ 2000.0f
+#define ENC_L_SIGN 1
+#define ENC_R_SIGN -1
 
 typedef struct {
     bool armed;
@@ -278,8 +280,8 @@ int main(void) {
 
         encoder_reader_poll(&enc_l_reader);
         encoder_reader_poll(&enc_r_reader);
-        state.enc_l = enc_l_reader.count;
-        state.enc_r = enc_r_reader.count;
+        state.enc_l = ENC_L_SIGN * enc_l_reader.count;
+        state.enc_r = ENC_R_SIGN * enc_r_reader.count;
 
         if (absolute_time_diff_us(get_absolute_time(), next_tele) <= 0) {
             emit_tele(&state);

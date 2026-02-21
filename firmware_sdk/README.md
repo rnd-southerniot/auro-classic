@@ -29,4 +29,5 @@ cmake --build firmware_sdk/build -j
 - PIO quadrature details and milestones are documented in `docs/pio_quadrature_plan.md`.
 - Current `src/main.c` supports: `ping`, `version`, `arm`, `disarm`, `set_pwm`, `stop`.
 - Encoder counts (`enc_l`, `enc_r`) are sourced from PIO-based encoder samplers on GP2-3 and GP4-5.
+- Encoder sign is normalized so a shared physical "forward" direction can be represented consistently (`ENC_L_SIGN`, `ENC_R_SIGN` in `src/main.c`).
 - RPM output is still a placeholder (`rpm_l/rpm_r=0.0`) until count-to-RPM conversion is added.
