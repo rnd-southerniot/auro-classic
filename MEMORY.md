@@ -32,5 +32,5 @@
 
 ## Current Priorities
 1. Replace open-loop `set_rpm` mapping with closed-loop RPM control.
-2. Add IMU calibration and encoder calibration command handlers.
+2. Replace `cal_imu` noop with hardware-backed IMU calibration flow.
 3. Add persistent calibration command flow to write/read runtime calibration values.

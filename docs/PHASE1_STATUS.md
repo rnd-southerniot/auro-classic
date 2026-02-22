@@ -14,7 +14,7 @@
 - PicoSDK path:
   - deterministic build with local SDK/toolchain
   - UF2 flash to RP2040
-  - NDJSON command loop acks for `ping/version/arm/disarm/set_pwm/set_rpm/stop`
+  - NDJSON command loop acks for `ping/version/arm/disarm/set_pwm/set_rpm/cal_encoders/cal_imu/stop`
   - PIO-derived encoder telemetry (`enc_l`, `enc_r`)
 
 ## Build Environment Used
@@ -23,7 +23,7 @@
 - Board serial: `/dev/cu.usbmodem211301`
 
 ## Known Gaps
-- Calibration commands are not implemented yet (`cal_imu`, `cal_encoders`).
+- IMU calibration is currently a protocol-compatible noop ack (sensor calibration flow not implemented).
 - Closed-loop RPM control is not implemented yet (`set_rpm` is open-loop mapping).
 
 ## Calibration Snapshot (February 22, 2026)

@@ -275,7 +275,15 @@ static void motor_pwm_init(void) {
     pwm_set_gpio_level(MOTOR_R_B_PIN, 0u);
 }
 
-static void handle_line(const char *line, robot_state_t *s) {
+static void handle_line(
+    const char *line,
+    robot_state_t *s,
+    encoder_reader_t *enc_l_reader,
+    encoder_reader_t *enc_r_reader,
+    int32_t *last_enc_l,
+    int32_t *last_enc_r,
+    uint32_t *last_tele_ts
+) {
     char id[64];
     float left = 0.0f;
     float right = 0.0f;
@@ -346,6 +354,23 @@ static void handle_line(const char *line, robot_state_t *s) {
         emit_ack_ok(id, NULL);
         return;
     }
+    if (strstr(line, "\"cmd\":\"cal_encoders\"")) {
+        enc_l_reader->count = 0;
+        enc_r_reader->count = 0;
+        s->enc_l = 0;
+        s->enc_r = 0;
+        s->rpm_l = 0.0f;
+        s->rpm_r = 0.0f;
+        *last_enc_l = 0;
+        *last_enc_r = 0;
+        *last_tele_ts = now_ms();
+        emit_ack_ok(id, NULL);
+        return;
+    }
+    if (strstr(line, "\"cmd\":\"cal_imu\"")) {
+        emit_ack_ok(id, "{\"status\":\"noop\"}");
+        return;
+    }
 
     emit_ack_err(id, "bad_cmd", "unknown cmd");
 }
@@ -395,7 +420,15 @@ int main(void) {
             if (c == '\r' || c == '\n') {
                 line[line_len] = '\0';
                 if (line_len > 0) {
-                    handle_line(line, &state);
+                    handle_line(
+                        line,
+                        &state,
+                        &enc_l_reader,
+                        &enc_r_reader,
+                        &last_enc_l,
+                        &last_enc_r,
+                        &last_tele_ts
+                    );
                 }
                 line_len = 0;
             } else if (line_len + 1 < LINE_BUF_SIZE) {

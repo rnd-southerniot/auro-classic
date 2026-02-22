@@ -146,6 +146,12 @@ def main():
                 right = float(msg.get("right", 0.0))
                 hw.set_rpm(left, right)
                 println({"type": "ack", "id": cmd_id, "ok": True})
+            elif cmd == "cal_encoders":
+                hw.reset_encoder_counts()
+                println({"type": "ack", "id": cmd_id, "ok": True})
+            elif cmd == "cal_imu":
+                # IMU calibration flow is not wired in MPY yet; keep protocol-compatible ack.
+                println({"type": "ack", "id": cmd_id, "ok": True, "data": {"status": "noop"}})
             else:
                 println({"type": "ack", "id": cmd_id, "ok": False, "error": {"code": "bad_cmd", "message": f"unknown cmd {cmd}"}})
 

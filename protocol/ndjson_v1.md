@@ -94,8 +94,8 @@ Error:
 Protocol v1 is the contract; firmware tracks it in staged subsets.
 
 - MicroPython (`firmware_mpy/main.py`) currently implements:
-  - `ping`, `set_log`, `version`, `i2c_scan`, `arm`, `disarm`, `stop`, `set_pwm`, `set_rpm` (open-loop mapping)
+  - `ping`, `set_log`, `version`, `i2c_scan`, `arm`, `disarm`, `stop`, `set_pwm`, `set_rpm` (open-loop mapping), `cal_encoders`, `cal_imu` (noop ack)
 - PicoSDK (`firmware_sdk/src/main.c`) currently implements:
-  - `ping`, `version`, `arm`, `disarm`, `stop`, `set_pwm`, `set_rpm` (open-loop mapping)
+  - `ping`, `version`, `arm`, `disarm`, `stop`, `set_pwm`, `set_rpm` (open-loop mapping), `cal_encoders`, `cal_imu` (noop ack)
 - Deferred in both tracks (planned later gates):
-  - `cal_imu`, `cal_encoders`
+  - hardware-backed IMU calibration flow
