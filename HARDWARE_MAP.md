@@ -52,7 +52,9 @@ PWM frequency target: ~20 kHz
 - Telemetry sign convention: forward normalized positive on both channels (`ENC_L_SIGN=1`, `ENC_R_SIGN=-1`)
 
 ### Calibration
-- counts-per-wheel-rev: measured by rotating wheel 1 turn (3 trials)
+- counts-per-wheel-rev (measured February 22, 2026; 3 manual 1-rev trials each):
+  - left trials: 576, 586, 585 -> average 582.33 -> use **582**
+  - right trials: 575, 591, 584 -> average 583.33 -> use **583**
 - wheel diameter: locked to CAD (~55 mm)
 
 ## IMU: ICM-20948

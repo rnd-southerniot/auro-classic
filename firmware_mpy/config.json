@@ -27,8 +27,8 @@
     "wheel_diameter_mm": 54.875,
     "track_width_mm": 155.0,
     "wheelbase_mm": 62.0,
-    "counts_per_wheel_rev_left": null,
-    "counts_per_wheel_rev_right": null
+    "counts_per_wheel_rev_left": 582.0,
+    "counts_per_wheel_rev_right": 583.0
   },
   "control": {
     "pwm_hz": 20000,

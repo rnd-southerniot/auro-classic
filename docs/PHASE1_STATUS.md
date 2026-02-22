@@ -24,4 +24,8 @@
 
 ## Known Gaps
 - Calibration commands are not implemented yet (`cal_imu`, `cal_encoders`).
-- RPM estimation constants in PicoSDK path still need final calibration to physical wheel counts-per-rev.
+- Closed-loop RPM control is not implemented yet (`set_rpm` is open-loop mapping).
+
+## Calibration Snapshot (February 22, 2026)
+- Left wheel counts/rev trials: `576`, `586`, `585` -> average `582.33` -> configured `582`.
+- Right wheel counts/rev trials: `575`, `591`, `584` -> average `583.33` -> configured `583`.

@@ -25,7 +25,12 @@
   - `ENC_L_SIGN = 1`
   - `ENC_R_SIGN = -1`
 
+## Encoder Calibration Baseline
+- Date: February 22, 2026.
+- Left counts/rev trials: 576, 586, 585 -> average 582.33 -> configured 582.
+- Right counts/rev trials: 575, 591, 584 -> average 583.33 -> configured 583.
+
 ## Current Priorities
-1. Calibrate PicoSDK `COUNTS_PER_WHEEL_REV_*` constants against measured wheel turns.
-2. Replace open-loop `set_rpm` mapping with closed-loop RPM control.
-3. Add IMU calibration and encoder calibration command handlers.
+1. Replace open-loop `set_rpm` mapping with closed-loop RPM control.
+2. Add IMU calibration and encoder calibration command handlers.
+3. Add persistent calibration command flow to write/read runtime calibration values.

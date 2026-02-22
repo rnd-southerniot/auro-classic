@@ -23,9 +23,10 @@
 #define MOTOR_PWM_WRAP 6249u
 #define ENC_L_SIGN 1
 #define ENC_R_SIGN -1
-// Calibrate these with wheel-turn trials for accurate absolute RPM values.
-#define COUNTS_PER_WHEEL_REV_L 360.0f
-#define COUNTS_PER_WHEEL_REV_R 360.0f
+// Calibrated from three 1-rev hand-turn trials (Feb 22, 2026):
+// left: 576, 586, 585 -> 582.33 ; right: 575, 591, 584 -> 583.33
+#define COUNTS_PER_WHEEL_REV_L 582.0f
+#define COUNTS_PER_WHEEL_REV_R 583.0f
 // Open-loop RPM command range mapped to PWM [-1, 1].
 #define OPEN_LOOP_MAX_ABS_RPM 200.0f
 
