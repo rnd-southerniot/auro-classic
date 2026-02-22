@@ -27,5 +27,5 @@
 
 ## Current Priorities
 1. Calibrate PicoSDK `COUNTS_PER_WHEEL_REV_*` constants against measured wheel turns.
-2. Add `set_rpm` command handling in both firmware tracks.
+2. Replace open-loop `set_rpm` mapping with closed-loop RPM control.
 3. Add IMU calibration and encoder calibration command handlers.

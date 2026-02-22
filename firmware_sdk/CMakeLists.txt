@@ -19,6 +19,7 @@ target_link_libraries(airborne_classic_fw
     pico_stdlib
     hardware_pio
     hardware_irq
+    hardware_pwm
 )
 
 pico_enable_stdio_uart(airborne_classic_fw 0)

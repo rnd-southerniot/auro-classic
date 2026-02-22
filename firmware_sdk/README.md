@@ -37,7 +37,9 @@ cmake --build firmware_sdk/build-pico-arm -j
 
 ## Protocol Coverage
 Implemented command subset:
-- `ping`, `version`, `arm`, `disarm`, `set_pwm`, `stop`
+- `ping`, `version`, `arm`, `disarm`, `set_pwm`, `set_rpm`, `stop`
+
+`set_rpm` currently maps target RPM values to open-loop PWM using `OPEN_LOOP_MAX_ABS_RPM` in `src/main.c`.
 
 Telemetry:
 - `mode`, `armed`, `pwm_l`, `pwm_r`, `enc_l`, `enc_r`, `rpm_l`, `rpm_r`, `yaw`, `fault`

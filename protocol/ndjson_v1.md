@@ -23,10 +23,11 @@ Open loop PWM (normalized -1..1):
 {"type":"cmd","id":"uuid","ts":0,"cmd":"set_pwm","left":0.2,"right":0.2}
 ```
 
-Closed loop RPM:
+RPM command:
 ```json
 {"type":"cmd","id":"uuid","ts":0,"cmd":"set_rpm","left":120,"right":120}
 ```
+Current firmware subsets map RPM targets to open-loop PWM; closed-loop control is a later phase.
 
 Emergency stop:
 ```json
@@ -88,13 +89,13 @@ Error:
 {"type":"ack","id":"uuid","ok":false,"error":{"code":"bad_cmd","message":"..."}}
 ```
 
-## Implementation Status (February 21, 2026)
+## Implementation Status (February 22, 2026)
 
 Protocol v1 is the contract; firmware tracks it in staged subsets.
 
 - MicroPython (`firmware_mpy/main.py`) currently implements:
-  - `ping`, `set_log`, `version`, `i2c_scan`, `arm`, `disarm`, `stop`, `set_pwm`
+  - `ping`, `set_log`, `version`, `i2c_scan`, `arm`, `disarm`, `stop`, `set_pwm`, `set_rpm` (open-loop mapping)
 - PicoSDK (`firmware_sdk/src/main.c`) currently implements:
-  - `ping`, `version`, `arm`, `disarm`, `stop`, `set_pwm`
+  - `ping`, `version`, `arm`, `disarm`, `stop`, `set_pwm`, `set_rpm` (open-loop mapping)
 - Deferred in both tracks (planned later gates):
-  - `set_rpm`, `cal_imu`, `cal_encoders`
+  - `cal_imu`, `cal_encoders`

@@ -9,7 +9,9 @@ class Hardware:
         self.cfg = cfg
         self.robot_name = cfg.get("robot", {}).get("name", "airborne-classic")
         self.fw_version = cfg.get("robot", {}).get("fw", "mpy-v0")
-        self.telemetry_hz = int(cfg.get("control", {}).get("telemetry_hz", 20))
+        control = cfg.get("control", {})
+        self.telemetry_hz = int(control.get("telemetry_hz", 20))
+        self.max_abs_rpm = float(control.get("max_abs_rpm", 200.0))
 
         p = cfg["pins"]
 
@@ -101,6 +103,14 @@ class Hardware:
     def set_pwm(self, left: float, right: float):
         self._pwm_l = self._set_hbridge(self.m1a, self.m1b, left)
         self._pwm_r = self._set_hbridge(self.m2a, self.m2b, right)
+
+    def _rpm_to_pwm(self, rpm: float) -> float:
+        if self.max_abs_rpm <= 0.0:
+            return 0.0
+        return max(-1.0, min(1.0, float(rpm) / self.max_abs_rpm))
+
+    def set_rpm(self, left: float, right: float):
+        self.set_pwm(self._rpm_to_pwm(left), self._rpm_to_pwm(right))
 
     def get_pwm(self):
         return self._pwm_l, self._pwm_r

@@ -1,4 +1,4 @@
-# Phase 1 Status (As of February 21, 2026)
+# Phase 1 Status (As of February 22, 2026)
 
 ## Gate Results
 - P1-0: PASS
@@ -14,7 +14,7 @@
 - PicoSDK path:
   - deterministic build with local SDK/toolchain
   - UF2 flash to RP2040
-  - NDJSON command loop acks for `ping/version/arm/disarm/set_pwm/stop`
+  - NDJSON command loop acks for `ping/version/arm/disarm/set_pwm/set_rpm/stop`
   - PIO-derived encoder telemetry (`enc_l`, `enc_r`)
 
 ## Build Environment Used
@@ -23,5 +23,5 @@
 - Board serial: `/dev/cu.usbmodem211301`
 
 ## Known Gaps
-- `set_rpm` and calibration commands are not implemented yet.
+- Calibration commands are not implemented yet (`cal_imu`, `cal_encoders`).
 - RPM estimation constants in PicoSDK path still need final calibration to physical wheel counts-per-rev.

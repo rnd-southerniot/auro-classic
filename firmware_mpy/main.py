@@ -141,6 +141,11 @@ def main():
                 right = float(msg.get("right", 0.0))
                 hw.set_pwm(left, right)
                 println({"type": "ack", "id": cmd_id, "ok": True})
+            elif cmd == "set_rpm":
+                left = float(msg.get("left", 0.0))
+                right = float(msg.get("right", 0.0))
+                hw.set_rpm(left, right)
+                println({"type": "ack", "id": cmd_id, "ok": True})
             else:
                 println({"type": "ack", "id": cmd_id, "ok": False, "error": {"code": "bad_cmd", "message": f"unknown cmd {cmd}"}})
 

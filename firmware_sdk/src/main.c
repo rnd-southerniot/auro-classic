@@ -3,8 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
+#include "hardware/gpio.h"
 #include "hardware/pio.h"
+#include "hardware/pwm.h"
 #include "pico/stdlib.h"
 #include "quadrature_sample.pio.h"
 
@@ -12,11 +15,19 @@
 #define ENC_L_PIN_BASE 2u
 #define ENC_R_PIN_BASE 4u
 #define ENCODER_SAMPLE_HZ 2000.0f
+#define MOTOR_L_A_PIN 8u
+#define MOTOR_L_B_PIN 9u
+#define MOTOR_R_A_PIN 10u
+#define MOTOR_R_B_PIN 11u
+#define MOTOR_PWM_HZ 20000u
+#define MOTOR_PWM_WRAP 6249u
 #define ENC_L_SIGN 1
 #define ENC_R_SIGN -1
 // Calibrate these with wheel-turn trials for accurate absolute RPM values.
 #define COUNTS_PER_WHEEL_REV_L 360.0f
 #define COUNTS_PER_WHEEL_REV_R 360.0f
+// Open-loop RPM command range mapped to PWM [-1, 1].
+#define OPEN_LOOP_MAX_ABS_RPM 200.0f
 
 typedef struct {
     bool armed;
@@ -193,6 +204,76 @@ static float counts_to_rpm(int32_t delta_counts, uint32_t delta_ms, float counts
     return ((float)delta_counts * 60000.0f) / (counts_per_rev * (float)delta_ms);
 }
 
+static float clamp_unit(float v) {
+    if (v > 1.0f) {
+        return 1.0f;
+    }
+    if (v < -1.0f) {
+        return -1.0f;
+    }
+    return v;
+}
+
+static float rpm_to_pwm(float rpm) {
+    if (OPEN_LOOP_MAX_ABS_RPM <= 0.0f) {
+        return 0.0f;
+    }
+    return clamp_unit(rpm / OPEN_LOOP_MAX_ABS_RPM);
+}
+
+static uint16_t unit_to_pwm_level(float v) {
+    float mag = fabsf(clamp_unit(v));
+    return (uint16_t)(mag * (float)MOTOR_PWM_WRAP);
+}
+
+static void drive_hbridge(uint pin_a, uint pin_b, float v) {
+    uint16_t level = unit_to_pwm_level(v);
+    // Cytron truth table:
+    // 00 brake
+    // 10 forward
+    // 01 backward
+    // 11 coast (Hi-Z)
+    if (v > 0.0f) {
+        pwm_set_gpio_level(pin_a, level);
+        pwm_set_gpio_level(pin_b, 0u);
+    } else if (v < 0.0f) {
+        pwm_set_gpio_level(pin_a, 0u);
+        pwm_set_gpio_level(pin_b, level);
+    } else {
+        pwm_set_gpio_level(pin_a, 0u);
+        pwm_set_gpio_level(pin_b, 0u);
+    }
+}
+
+static void apply_motor_outputs(const robot_state_t *s) {
+    float left = s->armed ? clamp_unit(s->pwm_l) : 0.0f;
+    float right = s->armed ? clamp_unit(s->pwm_r) : 0.0f;
+    drive_hbridge(MOTOR_L_A_PIN, MOTOR_L_B_PIN, left);
+    drive_hbridge(MOTOR_R_A_PIN, MOTOR_R_B_PIN, right);
+}
+
+static void motor_pwm_init(void) {
+    uint pins[] = {MOTOR_L_A_PIN, MOTOR_L_B_PIN, MOTOR_R_A_PIN, MOTOR_R_B_PIN};
+    for (size_t i = 0; i < sizeof(pins) / sizeof(pins[0]); i++) {
+        gpio_set_function(pins[i], GPIO_FUNC_PWM);
+    }
+
+    uint slice_l = pwm_gpio_to_slice_num(MOTOR_L_A_PIN);
+    uint slice_r = pwm_gpio_to_slice_num(MOTOR_R_A_PIN);
+    pwm_set_wrap(slice_l, MOTOR_PWM_WRAP);
+    pwm_set_clkdiv(slice_l, 1.0f);
+    pwm_set_enabled(slice_l, true);
+
+    pwm_set_wrap(slice_r, MOTOR_PWM_WRAP);
+    pwm_set_clkdiv(slice_r, 1.0f);
+    pwm_set_enabled(slice_r, true);
+
+    pwm_set_gpio_level(MOTOR_L_A_PIN, 0u);
+    pwm_set_gpio_level(MOTOR_L_B_PIN, 0u);
+    pwm_set_gpio_level(MOTOR_R_A_PIN, 0u);
+    pwm_set_gpio_level(MOTOR_R_B_PIN, 0u);
+}
+
 static void handle_line(const char *line, robot_state_t *s) {
     char id[64];
     float left = 0.0f;
@@ -243,8 +324,23 @@ static void handle_line(const char *line, robot_state_t *s) {
             s->pwm_l = 0.0f;
             s->pwm_r = 0.0f;
         } else {
-            s->pwm_l = left;
-            s->pwm_r = right;
+            s->pwm_l = clamp_unit(left);
+            s->pwm_r = clamp_unit(right);
+        }
+        emit_ack_ok(id, NULL);
+        return;
+    }
+    if (strstr(line, "\"cmd\":\"set_rpm\"")) {
+        if (!extract_number_field(line, "\"left\"", &left) || !extract_number_field(line, "\"right\"", &right)) {
+            emit_ack_err(id, "bad_args", "expected left/right numbers");
+            return;
+        }
+        if (!s->armed) {
+            s->pwm_l = 0.0f;
+            s->pwm_r = 0.0f;
+        } else {
+            s->pwm_l = rpm_to_pwm(left);
+            s->pwm_r = rpm_to_pwm(right);
         }
         emit_ack_ok(id, NULL);
         return;
@@ -277,6 +373,7 @@ int main(void) {
 
     stdio_init_all();
     sleep_ms(1000);
+    motor_pwm_init();
 
     offset = pio_add_program(pio0, &quadrature_sample_program);
     sm_l = pio_claim_unused_sm(pio0, true);
@@ -329,6 +426,7 @@ int main(void) {
             next_tele = make_timeout_time_ms(100);
         }
 
+        apply_motor_outputs(&state);
         sleep_ms(1);
     }
 }
