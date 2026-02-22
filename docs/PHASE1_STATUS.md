@@ -24,4 +24,4 @@
 
 ## Known Gaps
 - `set_rpm` and calibration commands are not implemented yet.
-- `rpm_l` / `rpm_r` fields remain placeholder values in PicoSDK path.
+- RPM estimation constants in PicoSDK path still need final calibration to physical wheel counts-per-rev.

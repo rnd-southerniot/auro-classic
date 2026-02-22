@@ -26,6 +26,6 @@
   - `ENC_R_SIGN = -1`
 
 ## Current Priorities
-1. Implement RPM estimation from encoder deltas.
+1. Calibrate PicoSDK `COUNTS_PER_WHEEL_REV_*` constants against measured wheel turns.
 2. Add `set_rpm` command handling in both firmware tracks.
 3. Add IMU calibration and encoder calibration command handlers.

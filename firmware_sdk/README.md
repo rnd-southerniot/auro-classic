@@ -41,7 +41,7 @@ Implemented command subset:
 
 Telemetry:
 - `mode`, `armed`, `pwm_l`, `pwm_r`, `enc_l`, `enc_r`, `rpm_l`, `rpm_r`, `yaw`, `fault`
-- `rpm_*` currently placeholder (`0.0`).
+- `rpm_*` is estimated from encoder deltas each telemetry interval (counts-per-rev constants in `src/main.c` should be calibrated).
 
 ## Notes
 - Pin mapping remains anchored in `HARDWARE_MAP.md`.

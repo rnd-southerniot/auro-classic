@@ -14,6 +14,9 @@
 #define ENCODER_SAMPLE_HZ 2000.0f
 #define ENC_L_SIGN 1
 #define ENC_R_SIGN -1
+// Calibrate these with wheel-turn trials for accurate absolute RPM values.
+#define COUNTS_PER_WHEEL_REV_L 360.0f
+#define COUNTS_PER_WHEEL_REV_R 360.0f
 
 typedef struct {
     bool armed;
@@ -21,6 +24,8 @@ typedef struct {
     float pwm_r;
     int32_t enc_l;
     int32_t enc_r;
+    float rpm_l;
+    float rpm_r;
 } robot_state_t;
 
 typedef struct {
@@ -39,14 +44,16 @@ static void emit_tele(const robot_state_t *s) {
     printf(
         "{\"type\":\"tele\",\"ts\":%lu,\"mode\":\"%s\",\"armed\":%s,"
         "\"pwm_l\":%.3f,\"pwm_r\":%.3f,\"enc_l\":%ld,\"enc_r\":%ld,"
-        "\"rpm_l\":0.0,\"rpm_r\":0.0,\"yaw\":0.0,\"fault\":null}\n",
+        "\"rpm_l\":%.3f,\"rpm_r\":%.3f,\"yaw\":0.0,\"fault\":null}\n",
         (unsigned long)now_ms(),
         s->armed ? "ARMED" : "DISARMED",
         s->armed ? "true" : "false",
         s->pwm_l,
         s->pwm_r,
         (long)s->enc_l,
-        (long)s->enc_r
+        (long)s->enc_r,
+        s->rpm_l,
+        s->rpm_r
     );
 }
 
@@ -179,6 +186,13 @@ static void encoder_reader_poll(encoder_reader_t *enc) {
     }
 }
 
+static float counts_to_rpm(int32_t delta_counts, uint32_t delta_ms, float counts_per_rev) {
+    if (delta_ms == 0u || counts_per_rev <= 0.0f) {
+        return 0.0f;
+    }
+    return ((float)delta_counts * 60000.0f) / (counts_per_rev * (float)delta_ms);
+}
+
 static void handle_line(const char *line, robot_state_t *s) {
     char id[64];
     float left = 0.0f;
@@ -244,11 +258,22 @@ int main(void) {
     uint offset;
     uint sm_l;
     uint sm_r;
+    uint32_t last_tele_ts;
+    int32_t last_enc_l;
+    int32_t last_enc_r;
     encoder_reader_t enc_l_reader;
     encoder_reader_t enc_r_reader;
     char line[LINE_BUF_SIZE];
     size_t line_len = 0;
-    robot_state_t state = {.armed = false, .pwm_l = 0.0f, .pwm_r = 0.0f, .enc_l = 0, .enc_r = 0};
+    robot_state_t state = {
+        .armed = false,
+        .pwm_l = 0.0f,
+        .pwm_r = 0.0f,
+        .enc_l = 0,
+        .enc_r = 0,
+        .rpm_l = 0.0f,
+        .rpm_r = 0.0f
+    };
 
     stdio_init_all();
     sleep_ms(1000);
@@ -258,6 +283,10 @@ int main(void) {
     sm_r = pio_claim_unused_sm(pio0, true);
     encoder_reader_init(&enc_l_reader, pio0, sm_l, ENC_L_PIN_BASE, offset);
     encoder_reader_init(&enc_r_reader, pio0, sm_r, ENC_R_PIN_BASE, offset);
+
+    last_tele_ts = now_ms();
+    last_enc_l = 0;
+    last_enc_r = 0;
 
     emit_tele(&state);
     next_tele = make_timeout_time_ms(100);
@@ -284,6 +313,18 @@ int main(void) {
         state.enc_r = ENC_R_SIGN * enc_r_reader.count;
 
         if (absolute_time_diff_us(get_absolute_time(), next_tele) <= 0) {
+            uint32_t tele_ts = now_ms();
+            uint32_t delta_ms = tele_ts - last_tele_ts;
+            int32_t delta_l = state.enc_l - last_enc_l;
+            int32_t delta_r = state.enc_r - last_enc_r;
+
+            state.rpm_l = counts_to_rpm(delta_l, delta_ms, COUNTS_PER_WHEEL_REV_L);
+            state.rpm_r = counts_to_rpm(delta_r, delta_ms, COUNTS_PER_WHEEL_REV_R);
+
+            last_tele_ts = tele_ts;
+            last_enc_l = state.enc_l;
+            last_enc_r = state.enc_r;
+
             emit_tele(&state);
             next_tele = make_timeout_time_ms(100);
         }
